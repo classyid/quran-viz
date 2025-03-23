@@ -2,7 +2,7 @@
 
 Aplikasi web yang menyajikan visualisasi interaktif tentang struktur dan statistik Al-Quran untuk memudahkan pemahaman terhadap kitab suci umat Islam.
 
-![Quran-Viz Screenshot](screenshot_url)
+![Quran-Viz Screenshot](https://blog.classy.id/upload/gambar_berita/781e2aff9a91fb5abc4041448667389f_20250323215700.png)
 
 ## Fitur
 
