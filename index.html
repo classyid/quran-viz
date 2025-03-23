@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi Struktur Al-Quran</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .arabic {
+            font-family: 'Traditional Arabic', serif;
+            font-size: 1.5rem;
+            direction: rtl;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-green-700 text-white shadow-md">
+        <div class="container mx-auto px-4 py-5">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class="fas fa-book-quran text-3xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Visualisasi Struktur Al-Quran</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" id="search-keyword" placeholder="Cari kata dalam Al-Quran..." class="px-4 py-2 rounded-lg text-gray-700 bg-white border border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 w-full md:w-64">
+                        <button id="search-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-700">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <button id="theme-toggle" class="text-white hover:text-green-200 transition">
+                        <i class="fas fa-moon text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="bg-green-600 text-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap">
+                <button id="nav-dashboard" class="nav-button py-3 px-4 hover:bg-green-700 transition text-white font-medium">
+                    <i class="fas fa-chart-pie mr-2"></i>Dashboard
+                </button>
+                <button id="nav-surahs" class="nav-button py-3 px-4 hover:bg-green-700 transition text-white font-medium">
+                    <i class="fas fa-book mr-2"></i>Daftar Surah
+                </button>
+                <button id="nav-search" class="nav-button py-3 px-4 hover:bg-green-700 transition text-white font-medium">
+                    <i class="fas fa-search mr-2"></i>Pencarian
+                </button>
+                <button id="nav-juz" class="nav-button py-3 px-4 hover:bg-green-700 transition text-white font-medium">
+                    <i class="fas fa-bookmark mr-2"></i>Juz
+                </button>
+                <button id="nav-audio" class="nav-button py-3 px-4 hover:bg-green-700 transition text-white font-medium">
+                    <i class="fas fa-volume-up mr-2"></i>Audio
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Loading State -->
+        <div id="loading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-700"></div>
+            <p class="ml-3 text-green-700">Memuat data...</p>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="error" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 hidden" role="alert">
+            <p>Terjadi kesalahan saat memuat data. Silakan refresh halaman dan coba lagi.</p>
+        </div>
+        
+        <!-- Dashboard -->
+        <div id="dashboard-section" class="section hidden">
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Surah</p>
+                            <h2 id="total-surah" class="text-3xl font-bold text-green-700">114</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-book text-green-700 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Total Ayat</p>
+                            <h2 id="total-ayat" class="text-3xl font-bold text-green-700">6,236</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-scroll text-green-700 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Surah Makkiyah</p>
+                            <h2 id="makkiyah-count" class="text-3xl font-bold text-green-700">86</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-mosque text-green-700 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm">Surah Madaniyah</p>
+                            <h2 id="madaniyah-count" class="text-3xl font-bold text-green-700">28</h2>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-kaaba text-green-700 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Pie Chart - Makkiyah vs Madaniyah -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">Surah Makkiyah vs Madaniyah</h3>
+                    <div class="h-64">
+                        <canvas id="revelation-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Bar Chart - Surah dengan Ayat Terbanyak -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">Surah dengan Ayat Terbanyak</h3>
+                    <div class="h-64">
+                        <canvas id="top-surahs-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Line Chart - Distribusi Jumlah Ayat per Surah -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">Distribusi Jumlah Ayat</h3>
+                    <div class="h-64">
+                        <canvas id="ayat-distribution-chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Horizontal Bar - Juz Distribution -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">Surah per Juz (Estimasi)</h3>
+                    <div class="h-64">
+                        <canvas id="juz-distribution-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Fun Facts -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="text-lg font-bold mb-4 text-gray-700">Fakta Menarik Al-Quran</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <i class="fas fa-star text-green-500 mt-1 mr-2"></i>
+                        <p>Surah Al-Baqarah adalah surah terpanjang dengan 286 ayat.</p>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-star text-green-500 mt-1 mr-2"></i>
+                        <p>Surah Al-Kautsar adalah surah terpendek dengan hanya 3 ayat.</p>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-star text-green-500 mt-1 mr-2"></i>
+                        <p>Juz 30 memiliki jumlah surah terbanyak yaitu 37 surah.</p>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-star text-green-500 mt-1 mr-2"></i>
+                        <p>Ada 114 surah dalam Al-Quran yang dibagi menjadi 30 juz.</p>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-star text-green-500 mt-1 mr-2"></i>
+                        <p>Kata "Allah" disebutkan 2,698 kali dalam Al-Quran.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Surah List -->
+        <div id="surahs-section" class="section hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-700">Daftar Surah</h3>
+                    <div class="relative">
+                        <input type="text" id="surah-search" placeholder="Cari surah..." class="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="surah-grid">
+                    <!-- Surah cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Surah Detail -->
+        <div id="surah-detail-section" class="section hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <div class="mb-4">
+                    <button id="back-to-surahs" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar Surah
+                    </button>
+                </div>
+                
+                <div id="surah-info" class="mb-6">
+                    <!-- Surah info will be inserted here -->
+                </div>
+                
+                <div id="ayat-list">
+                    <!-- Ayat list will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Results -->
+        <div id="search-section" class="section hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-700 mb-4">Hasil Pencarian</h3>
+                <div id="search-results">
+                    <!-- Search results will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Juz Section -->
+        <div id="juz-section" class="section hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-700 mb-4">Daftar Juz</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-4" id="juz-grid">
+                    <!-- Juz buttons will be inserted here -->
+                </div>
+            </div>
+            
+            <div id="juz-detail" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+                <div class="mb-4">
+                    <button id="back-to-juz" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar Juz
+                    </button>
+                </div>
+                
+                <h3 id="juz-title" class="text-lg font-bold text-gray-700 mb-4"></h3>
+                
+                <div id="juz-ayat-list">
+                    <!-- Juz ayat list will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Audio Section -->
+        <div id="audio-section" class="section hidden">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h3 class="text-lg font-bold text-gray-700 mb-4">Audio Al-Quran</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="audio-surah" class="block text-sm font-medium text-gray-700 mb-1">Surah</label>
+                        <select id="audio-surah" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Pilih Surah</option>
+                            <!-- Options will be inserted here -->
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="audio-ayat" class="block text-sm font-medium text-gray-700 mb-1">Ayat</label>
+                        <select id="audio-ayat" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500" disabled>
+                            <option value="">Pilih Ayat</option>
+                            <!-- Options will be inserted here -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="audio-player" class="hidden">
+                    <div class="mb-4">
+                        <div id="audio-text" class="arabic text-center mb-4 py-4 px-2 bg-green-50 rounded-lg"></div>
+                        <div id="audio-translation" class="text-center mb-4 py-2 px-2 bg-gray-50 rounded-lg"></div>
+                        <audio id="audio-element" controls class="w-full"></audio>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button id="prev-ayat" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-step-backward mr-2"></i>Ayat Sebelumnya
+                        </button>
+                        <button id="next-ayat" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                            Ayat Selanjutnya<i class="fas fa-step-forward ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-green-800 text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2">Visualisasi Struktur Al-Quran</h3>
+                    <p class="text-green-200">Aplikasi untuk memahami struktur dan statistik Al-Quran.</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-white hover:text-green-200 transition">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-green-200 transition">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-white hover:text-green-200 transition">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-green-700 text-center text-green-200">
+                <p>&copy; 2024 Visualisasi Struktur Al-Quran. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Base API URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyDhS4WMtLO2sSvvKImE6tq4gRcazMPGPkQDzjmIu2xDAeiVnD3mdsRfAetYFvi2RQUjw/exec';
+        
+        // DOM Elements
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const dashboardSectionEl = document.getElementById('dashboard-section');
+        const surahsSectionEl = document.getElementById('surahs-section');
+        const surahDetailSectionEl = document.getElementById('surah-detail-section');
+        const searchSectionEl = document.getElementById('search-section');
+        const juzSectionEl = document.getElementById('juz-section');
+        const audioSectionEl = document.getElementById('audio-section');
+        const surahSearchEl = document.getElementById('surah-search');
+        const themeToggleEl = document.getElementById('theme-toggle');
+        const surahGridEl = document.getElementById('surah-grid');
+        const searchKeywordEl = document.getElementById('search-keyword');
+        const searchButtonEl = document.getElementById('search-button');
+        const searchResultsEl = document.getElementById('search-results');
+        const juzGridEl = document.getElementById('juz-grid');
+        const juzDetailEl = document.getElementById('juz-detail');
+        const juzTitleEl = document.getElementById('juz-title');
+        const juzAyatListEl = document.getElementById('juz-ayat-list');
+        const backToJuzEl = document.getElementById('back-to-juz');
+        const audioSurahEl = document.getElementById('audio-surah');
+        const audioAyatEl = document.getElementById('audio-ayat');
+        const audioPlayerEl = document.getElementById('audio-player');
+        const audioElementEl = document.getElementById('audio-element');
+        const audioTextEl = document.getElementById('audio-text');
+        const audioTranslationEl = document.getElementById('audio-translation');
+        const prevAyatEl = document.getElementById('prev-ayat');
+        const nextAyatEl = document.getElementById('next-ayat');
+        
+        // Chart Instances
+        let revelationChart;
+        let topSurahsChart;
+        let ayatDistributionChart;
+        let juzDistributionChart;
+        
+        // Data Storage
+        let allSurahsData = [];
+        let currentSurah = null;
+        let currentAyat = null;
+        let currentJuz = null;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup navigation
+            document.getElementById('nav-dashboard').addEventListener('click', () => showSection('dashboard'));
+            document.getElementById('nav-surahs').addEventListener('click', () => showSection('surahs'));
+            document.getElementById('nav-search').addEventListener('click', () => showSection('search'));
+            document.getElementById('nav-juz').addEventListener('click', () => showSection('juz'));
+            document.getElementById('nav-audio').addEventListener('click', () => showSection('audio'));
+            
+            // Load data
+            loadSurahData();
+            
+            // Initialize search functionality
+            surahSearchEl.addEventListener('input', filterSurahGrid);
+            
+            // Setup search form
+            searchButtonEl.addEventListener('click', performSearch);
+            searchKeywordEl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Back buttons
+            document.getElementById('back-to-surahs').addEventListener('click', () => showSection('surahs'));
+            backToJuzEl.addEventListener('click', () => {
+                juzDetailEl.classList.add('hidden');
+                juzGridEl.parentElement.classList.remove('hidden');
+            });
+            
+            // Audio navigation
+            prevAyatEl.addEventListener('click', playPreviousAyat);
+            nextAyatEl.addEventListener('click', playNextAyat);
+            
+            // Theme toggle
+            themeToggleEl.addEventListener('click', toggleTheme);
+            
+            // Initialize juz grid
+            initializeJuzGrid();
+        });
+        
+        // Load Surah Data
+        async function loadSurahData() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getAllSurah`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    allSurahsData = data.data;
+                    
+                    // Process data
+                    processData(allSurahsData);
+                    
+                    // Populate the dashboard
+                    populateDashboard(allSurahsData);
+                    
+                    // Populate surah grid
+                    populateSurahGrid(allSurahsData);
+                    
+                    // Populate audio surah dropdown
+                    populateAudioSurahDropdown(allSurahsData);
+                    
+                    // Setup audio surah change
+                    audioSurahEl.addEventListener('change', handleAudioSurahChange);
+                    audioAyatEl.addEventListener('change', handleAudioAyatChange);
+                    
+                    // Hide loading, show dashboard
+                    hideLoading();
+                    showSection('dashboard');
+                } else {
+                    throw new Error(data.message || 'Failed to load surah data');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError();
+            }
+        }
+        
+        // Show Section
+        function showSection(sectionName) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            const navButtons = document.querySelectorAll('.nav-button');
+            navButtons.forEach(button => button.classList.remove('bg-green-700'));
+            
+            if (sectionName === 'dashboard') {
+                dashboardSectionEl.classList.remove('hidden');
+                document.getElementById('nav-dashboard').classList.add('bg-green-700');
+            } else if (sectionName === 'surahs') {
+                surahsSectionEl.classList.remove('hidden');
+                document.getElementById('nav-surahs').classList.add('bg-green-700');
+            } else if (sectionName === 'surah-detail') {
+                surahDetailSectionEl.classList.remove('hidden');
+                document.getElementById('nav-surahs').classList.add('bg-green-700');
+            } else if (sectionName === 'search') {
+                searchSectionEl.classList.remove('hidden');
+                document.getElementById('nav-search').classList.add('bg-green-700');
+            } else if (sectionName === 'juz') {
+                juzSectionEl.classList.remove('hidden');
+                document.getElementById('nav-juz').classList.add('bg-green-700');
+            } else if (sectionName === 'audio') {
+                audioSectionEl.classList.remove('hidden');
+                document.getElementById('nav-audio').classList.add('bg-green-700');
+            }
+        }
+        
+        // Process Data for Visualization
+        function processData(surahs) {
+            // Calculate total verses
+            const totalVerses = surahs.reduce((total, surah) => total + surah.number_of_verses, 0);
+            
+            // Count revelation types
+            const makkiyahCount = surahs.filter(surah => surah.revelation_id === 'Makkiyyah').length;
+            const madaniyahCount = surahs.filter(surah => surah.revelation_id === 'Madaniyyah').length;
+            
+            // Update statistics cards
+            document.getElementById('total-surah').textContent = surahs.length;
+            document.getElementById('total-ayat').textContent = totalVerses.toLocaleString();
+            document.getElementById('makkiyah-count').textContent = makkiyahCount;
+            document.getElementById('madaniyah-count').textContent = madaniyahCount;
+        }
+        
+        // Populate Dashboard with Charts
+        function populateDashboard(surahs) {
+            // Create charts
+            createRevelationChart(surahs);
+            createTopSurahsChart(surahs);
+            createAyatDistributionChart(surahs);
+            createJuzDistributionChart();
+        }
+        
+        // Create Revelation Chart (Pie)
+        function createRevelationChart(surahs) {
+            const makkiyahCount = surahs.filter(surah => surah.revelation_id === 'Makkiyyah').length;
+            const madaniyahCount = surahs.filter(surah => surah.revelation_id === 'Madaniyyah').length;
+            
+            const ctx = document.getElementById('revelation-chart').getContext('2d');
+            revelationChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Makkiyah', 'Madaniyah'],
+                    datasets: [{
+                        data: [makkiyahCount, madaniyahCount],
+                        backgroundColor: ['#059669', '#10B981'],
+                        borderColor: ['#fff', '#fff'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} surah (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create Top Surahs Chart (Bar)
+        function createTopSurahsChart(surahs) {
+            // Sort surahs by verse count and take top 10
+            const topSurahs = [...surahs]
+                .sort((a, b) => b.number_of_verses - a.number_of_verses)
+                .slice(0, 10);
+            
+            const ctx = document.getElementById('top-surahs-chart').getContext('2d');
+            topSurahsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topSurahs.map(surah => surah.name_id),
+                    datasets: [{
+                        label: 'Jumlah Ayat',
+                        data: topSurahs.map(surah => surah.number_of_verses),
+                        backgroundColor: '#059669',
+                        borderColor: '#057857',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Jumlah Ayat'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Surah'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                    }
+            });
+        }
+        
+        // Create Ayat Distribution Chart (Line)
+        function createAyatDistributionChart(surahs) {
+            // Sort surahs by number
+            const sortedSurahs = [...surahs].sort((a, b) => a.number - b.number);
+            
+            const ctx = document.getElementById('ayat-distribution-chart').getContext('2d');
+            ayatDistributionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedSurahs.map(surah => surah.number),
+                    datasets: [{
+                        label: 'Jumlah Ayat',
+                        data: sortedSurahs.map(surah => surah.number_of_verses),
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const surahNumber = context[0].label;
+                                    const surah = sortedSurahs.find(s => s.number == surahNumber);
+                                    return `${surah.name_id} (${surahNumber})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Jumlah Ayat'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Nomor Surah'
+                            },
+                            ticks: {
+                                maxTicksLimit: 30
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create Juz Distribution Chart (Horizontal Bar)
+        function createJuzDistributionChart() {
+            // This is a simplified approximation since the API doesn't provide direct juz distribution
+            const juzData = [
+                { juz: 1, surahs: 2 },
+                { juz: 2, surahs: 2 },
+                { juz: 3, surahs: 2 },
+                { juz: 4, surahs: 3 },
+                { juz: 5, surahs: 1 },
+                { juz: 6, surahs: 2 },
+                { juz: 7, surahs: 1 },
+                { juz: 8, surahs: 1 },
+                { juz: 9, surahs: 1 },
+                { juz: 10, surahs: 2 },
+                { juz: 11, surahs: 3 },
+                { juz: 12, surahs: 1 },
+                { juz: 13, surahs: 2 },
+                { juz: 14, surahs: 2 },
+                { juz: 15, surahs: 2 },
+                { juz: 16, surahs: 2 },
+                { juz: 17, surahs: 2 },
+                { juz: 18, surahs: 3 },
+                { juz: 19, surahs: 2 },
+                { juz: 20, surahs: 3 },
+                { juz: 21, surahs: 2 },
+                { juz: 22, surahs: 2 },
+                { juz: 23, surahs: 3 },
+                { juz: 24, surahs: 2 },
+                { juz: 25, surahs: 3 },
+                { juz: 26, surahs: 6 },
+                { juz: 27, surahs: 7 },
+                { juz: 28, surahs: 9 },
+                { juz: 29, surahs: 11 },
+                { juz: 30, surahs: 37 }
+            ];
+            
+            const ctx = document.getElementById('juz-distribution-chart').getContext('2d');
+            juzDistributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: juzData.map(j => `Juz ${j.juz}`),
+                    datasets: [{
+                        label: 'Jumlah Surah',
+                        data: juzData.map(j => j.surahs),
+                        backgroundColor: '#10B981',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.raw} surah`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Jumlah Surah'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Juz'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Populate Surah Grid
+        function populateSurahGrid(surahs) {
+            surahGridEl.innerHTML = '';
+            
+            surahs.forEach(surah => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition cursor-pointer';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">${surah.number}</span>
+                        <span class="text-gray-500 text-sm">${surah.number_of_verses} Ayat</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">${surah.name_id}</h3>
+                    <p class="text-sm text-gray-600 mb-2">${surah.translation_id}</p>
+                    <p class="text-xl text-right font-arabic">${surah.name_short}</p>
+                    <div class="flex justify-between mt-2 pt-2 border-t border-gray-100">
+                        <span class="text-xs text-gray-500">${surah.revelation_id}</span>
+                        <button class="text-green-600 hover:text-green-800 text-sm font-medium">
+                            Lihat Detail <i class="fas fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => loadSurahDetail(surah.number));
+                surahGridEl.appendChild(card);
+            });
+        }
+        
+        // Load Surah Detail
+        async function loadSurahDetail(surahNumber) {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getSurah&number=${surahNumber}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentSurah = data.data.surah;
+                    
+                    // Populate surah info
+                    const surahInfoEl = document.getElementById('surah-info');
+                    surahInfoEl.innerHTML = `
+                        <div class="text-center mb-4">
+                            <h2 class="text-3xl font-bold text-gray-800">${currentSurah.name_id}</h2>
+                            <p class="text-xl text-gray-600">${currentSurah.translation_id}</p>
+                            <p class="text-3xl font-arabic my-3">${currentSurah.name_long}</p>
+                            <div class="flex justify-center space-x-4 mt-2">
+                                <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">${currentSurah.revelation_id}</span>
+                                <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">${currentSurah.number_of_verses} Ayat</span>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg mb-4">
+                            <p class="text-gray-700">${currentSurah.tafsir}</p>
+                        </div>
+                        <div class="flex justify-between mb-4">
+                            <a href="${currentSurah.audio_url}" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+                                <i class="fas fa-headphones mr-2"></i>Dengar Audio Surah
+                            </a>
+                        </div>
+                    `;
+                    
+                    // Populate ayat list
+                    const ayatListEl = document.getElementById('ayat-list');
+                    ayatListEl.innerHTML = '';
+                    
+                    data.data.ayat.forEach(ayat => {
+                        const ayatCard = document.createElement('div');
+                        ayatCard.className = 'bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 border-green-600';
+                        ayatCard.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">${ayat.Ayah}</span>
+                                <button class="text-green-600 hover:text-green-800" onclick="playAudio('${ayat.Audio}')">
+                                    <i class="fas fa-play-circle text-xl"></i>
+                                </button>
+                            </div>
+                            <p class="text-2xl text-right font-arabic mb-4">${ayat.Arab}</p>
+                            <p class="text-gray-600 italic mb-2">${ayat.Latin}</p>
+                            <p class="text-gray-800">${ayat.Text}</p>
+                        `;
+                        
+                        ayatListEl.appendChild(ayatCard);
+                    });
+                    
+                    hideLoading();
+                    showSection('surah-detail');
+                } else {
+                    throw new Error(data.message || 'Failed to load surah detail');
+                }
+            } catch (error) {
+                console.error('Error loading surah detail:', error);
+                showError();
+            }
+        }
+        
+        // Initialize Juz Grid
+        function initializeJuzGrid() {
+            juzGridEl.innerHTML = '';
+            
+            for (let i = 1; i <= 30; i++) {
+                const juzButton = document.createElement('button');
+                juzButton.className = 'bg-white rounded-xl shadow-md p-4 hover:bg-green-50 transition';
+                juzButton.innerHTML = `
+                    <span class="block text-xl font-bold text-gray-800 mb-1">Juz ${i}</span>
+                `;
+                
+                juzButton.addEventListener('click', () => loadJuzDetail(i));
+                juzGridEl.appendChild(juzButton);
+            }
+        }
+        
+        // Load Juz Detail
+        async function loadJuzDetail(juzNumber) {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getJuz&number=${juzNumber}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentJuz = juzNumber;
+                    
+                    // Update juz title
+                    juzTitleEl.textContent = `Juz ${juzNumber}`;
+                    
+                    // Populate juz ayat list
+                    juzAyatListEl.innerHTML = '';
+                    
+                    // Group ayats by surah
+                    const ayatsBySurah = {};
+                    data.data.forEach(ayat => {
+                        if (!ayatsBySurah[ayat.Surah]) {
+                            ayatsBySurah[ayat.Surah] = [];
+                        }
+                        ayatsBySurah[ayat.Surah].push(ayat);
+                    });
+                    
+                    // Create section for each surah
+                    for (const surahNumber in ayatsBySurah) {
+                        const surahAyats = ayatsBySurah[surahNumber];
+                        const surah = allSurahsData.find(s => s.number == surahNumber);
+                        
+                        const surahSection = document.createElement('div');
+                        surahSection.className = 'mb-6';
+                        surahSection.innerHTML = `
+                            <div class="flex justify-between items-center mb-3 bg-green-50 p-3 rounded-lg">
+                                <h4 class="text-lg font-bold text-gray-800">${surah.name_id}</h4>
+                                <span class="text-sm text-gray-500">${surah.translation_id}</span>
+                            </div>
+                        `;
+                        
+                        // Add ayats
+                        surahAyats.forEach(ayat => {
+                            const ayatCard = document.createElement('div');
+                            ayatCard.className = 'bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 border-green-600';
+                            ayatCard.innerHTML = `
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">${ayat.Ayah}</span>
+                                    <button class="text-green-600 hover:text-green-800" onclick="playAudio('${ayat.Audio}')">
+                                        <i class="fas fa-play-circle text-xl"></i>
+                                    </button>
+                                </div>
+                                <p class="text-2xl text-right font-arabic mb-4">${ayat.Arab}</p>
+                                <p class="text-gray-600 italic mb-2">${ayat.Latin}</p>
+                                <p class="text-gray-800">${ayat.Text}</p>
+                            `;
+                            
+                            surahSection.appendChild(ayatCard);
+                        });
+                        
+                        juzAyatListEl.appendChild(surahSection);
+                    }
+                    
+                    hideLoading();
+                    juzDetailEl.classList.remove('hidden');
+                    juzGridEl.parentElement.classList.add('hidden');
+                } else {
+                    throw new Error(data.message || 'Failed to load juz detail');
+                }
+            } catch (error) {
+                console.error('Error loading juz detail:', error);
+                showError();
+            }
+        }
+        
+        // Perform Search
+        async function performSearch() {
+            const keyword = searchKeywordEl.value.trim();
+            
+            if (!keyword) {
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=search&q=${encodeURIComponent(keyword)}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Display search results
+                    searchResultsEl.innerHTML = `
+                        <div class="mb-4">
+                            <p class="text-gray-600">Ditemukan <strong>${data.count}</strong> hasil untuk: <strong>"${data.keyword}"</strong></p>
+                        </div>
+                    `;
+                    
+                    if (data.count > 0) {
+                        data.data.forEach(ayat => {
+                            const surah = allSurahsData.find(s => s.number === ayat.Surah);
+                            
+                            const resultCard = document.createElement('div');
+                            resultCard.className = 'bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 border-green-600';
+                            resultCard.innerHTML = `
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <span class="font-medium text-green-700">${surah.name_id}</span>
+                                        <span class="text-gray-500">: Ayat ${ayat.Ayah}</span>
+                                    </div>
+                                    <button class="text-green-600 hover:text-green-800" onclick="playAudio('${ayat.Audio}')">
+                                        <i class="fas fa-play-circle text-xl"></i>
+                                    </button>
+                                </div>
+                                <p class="text-2xl text-right font-arabic mb-4">${ayat.Arab}</p>
+                                <p class="text-gray-600 italic mb-2">${ayat.Latin}</p>
+                                <p class="text-gray-800">${ayat.Text}</p>
+                                <button class="mt-2 text-green-600 hover:text-green-800 text-sm font-medium" onclick="loadSurahDetail(${ayat.Surah})">
+                                    Lihat Surah <i class="fas fa-chevron-right ml-1"></i>
+                                </button>
+                            `;
+                            
+                            searchResultsEl.appendChild(resultCard);
+                        });
+                    } else {
+                        searchResultsEl.innerHTML += `
+                            <div class="bg-yellow-50 p-4 rounded-lg">
+                                <p class="text-yellow-700">Tidak ditemukan hasil untuk kata kunci tersebut. Coba dengan kata kunci lain.</p>
+                            </div>
+                        `;
+                    }
+                    
+                    hideLoading();
+                    showSection('search');
+                } else {
+                    throw new Error(data.message || 'Failed to perform search');
+                }
+            } catch (error) {
+                console.error('Error performing search:', error);
+                showError();
+            }
+        }
+        
+        // Populate Audio Surah Dropdown
+        function populateAudioSurahDropdown(surahs) {
+            audioSurahEl.innerHTML = '<option value="">Pilih Surah</option>';
+            
+            surahs.forEach(surah => {
+                const option = document.createElement('option');
+                option.value = surah.number;
+                option.textContent = `${surah.number}. ${surah.name_id}`;
+                audioSurahEl.appendChild(option);
+            });
+        }
+        
+        // Handle Audio Surah Change
+        async function handleAudioSurahChange() {
+            const surahNumber = audioSurahEl.value;
+            
+            if (!surahNumber) {
+                audioAyatEl.innerHTML = '<option value="">Pilih Ayat</option>';
+                audioAyatEl.disabled = true;
+                audioPlayerEl.classList.add('hidden');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_URL}?action=getSurah&number=${surahNumber}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const surah = data.data.surah;
+                    const ayats = data.data.ayat;
+                    
+                    // Populate ayat dropdown
+                    audioAyatEl.innerHTML = '<option value="">Pilih Ayat</option>';
+                    ayats.forEach(ayat => {
+                        const option = document.createElement('option');
+                        option.value = JSON.stringify({
+                            surah: surahNumber,
+                            ayat: ayat.Ayah,
+                            text: ayat.Arab,
+                            translation: ayat.Text,
+                            audio: ayat.Audio
+                        });
+                        option.textContent = `Ayat ${ayat.Ayah}`;
+                        audioAyatEl.appendChild(option);
+                    });
+                    
+                    audioAyatEl.disabled = false;
+                    hideLoading();
+                } else {
+                    throw new Error(data.message || 'Failed to load surah ayats');
+                }
+            } catch (error) {
+                console.error('Error loading surah ayats:', error);
+                showError();
+            }
+        }
+        
+        // Handle Audio Ayat Change
+        function handleAudioAyatChange() {
+            const ayatData = audioAyatEl.value;
+            
+            if (!ayatData) {
+                audioPlayerEl.classList.add('hidden');
+                return;
+            }
+            
+            const { surah, ayat, text, translation, audio } = JSON.parse(ayatData);
+            currentAyat = { surah, ayat };
+            
+            // Update audio element
+            audioElementEl.src = audio;
+            audioTextEl.textContent = text;
+            audioTranslationEl.textContent = translation;
+            
+            // Show audio player
+            audioPlayerEl.classList.remove('hidden');
+        }
+        
+        // Play Previous Ayat
+        function playPreviousAyat() {
+            if (!currentAyat) return;
+            
+            const prevOption = Array.from(audioAyatEl.options).find(option => {
+                if (!option.value) return false;
+                const data = JSON.parse(option.value);
+                return data.surah == currentAyat.surah && data.ayat == currentAyat.ayat - 1;
+            });
+            
+            if (prevOption) {
+                audioAyatEl.value = prevOption.value;
+                handleAudioAyatChange();
+                audioElementEl.play();
+            } else {
+                // Check if there's a previous surah
+                const prevSurahOption = Array.from(audioSurahEl.options).find(option => {
+                    if (!option.value) return false;
+                    return option.value == currentAyat.surah - 1;
+                });
+                
+                if (prevSurahOption) {
+                    audioSurahEl.value = prevSurahOption.value;
+                    handleAudioSurahChange().then(() => {
+                        // Select the last ayat of the previous surah
+                        setTimeout(() => {
+                            const lastAyatOption = audioAyatEl.options[audioAyatEl.options.length - 1];
+                            if (lastAyatOption && lastAyatOption.value) {
+                                audioAyatEl.value = lastAyatOption.value;
+                                handleAudioAyatChange();
+                                audioElementEl.play();
+                            }
+                        }, 1000);
+                    });
+                }
+            }
+        }
+        
+        // Play Next Ayat
+        function playNextAyat() {
+            if (!currentAyat) return;
+            
+            const nextOption = Array.from(audioAyatEl.options).find(option => {
+                if (!option.value) return false;
+                const data = JSON.parse(option.value);
+                return data.surah == currentAyat.surah && data.ayat == currentAyat.ayat + 1;
+            });
+            
+            if (nextOption) {
+                audioAyatEl.value = nextOption.value;
+                handleAudioAyatChange();
+                audioElementEl.play();
+            } else {
+                // Check if there's a next surah
+                const nextSurahOption = Array.from(audioSurahEl.options).find(option => {
+                    if (!option.value) return false;
+                    return option.value == currentAyat.surah + 1;
+                });
+                
+                if (nextSurahOption) {
+                    audioSurahEl.value = nextSurahOption.value;
+                    handleAudioSurahChange().then(() => {
+                        // Select the first ayat of the next surah
+                        setTimeout(() => {
+                            const firstAyatOption = audioAyatEl.options[1]; // Index 0 is the "Pilih Ayat" option
+                            if (firstAyatOption && firstAyatOption.value) {
+                                audioAyatEl.value = firstAyatOption.value;
+                                handleAudioAyatChange();
+                                audioElementEl.play();
+                            }
+                        }, 1000);
+                    });
+                }
+            }
+        }
+        
+        // Play Audio
+        window.playAudio = function(audioUrl) {
+            const audioPlayer = new Audio(audioUrl);
+            audioPlayer.play();
+        };
+        
+        // Filter Surah Grid
+        function filterSurahGrid() {
+            const searchTerm = surahSearchEl.value.toLowerCase();
+            
+            if (!searchTerm) {
+                populateSurahGrid(allSurahsData);
+                return;
+            }
+            
+            const filteredSurahs = allSurahsData.filter(surah => 
+                surah.name_id.toLowerCase().includes(searchTerm) ||
+                surah.translation_id.toLowerCase().includes(searchTerm) ||
+                surah.number.toString().includes(searchTerm)
+            );
+            
+            populateSurahGrid(filteredSurahs);
+        }
+        
+        // Toggle Theme
+        function toggleTheme() {
+            const body = document.body;
+            
+            if (body.classList.toggle('dark-mode')) {
+                // Switch to dark theme
+                themeToggleEl.innerHTML = '<i class="fas fa-sun text-xl"></i>';
+                
+                // Apply dark mode styles
+                body.classList.add('bg-gray-900');
+                body.classList.add('text-white');
+                
+                // Update charts for dark mode
+                updateChartsTheme(true);
+                
+                // Store preference
+                localStorage.setItem('theme', 'dark');
+            } else {
+                // Switch to light theme
+                themeToggleEl.innerHTML = '<i class="fas fa-moon text-xl"></i>';
+                
+                // Remove dark mode styles
+                body.classList.remove('bg-gray-900');
+                body.classList.remove('text-white');
+                
+                // Update charts for light mode
+                updateChartsTheme(false);
+                
+                // Store preference
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        // Update Charts Theme
+        function updateChartsTheme(isDark) {
+            const fontColor = isDark ? '#ffffff' : '#666666';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            
+            // Update each chart
+            const charts = [revelationChart, topSurahsChart, ayatDistributionChart, juzDistributionChart];
+            
+            charts.forEach(chart => {
+                if (!chart) return;
+                
+                // Update scales
+                if (chart.options.scales) {
+                    Object.values(chart.options.scales).forEach(scale => {
+                        if (scale.ticks) {
+                            scale.ticks.color = fontColor;
+                        }
+                        if (scale.grid) {
+                            scale.grid.color = gridColor;
+                        }
+                        if (scale.title) {
+                            scale.title.color = fontColor;
+                        }
+                    });
+                }
+                
+                // Update legend
+                if (chart.options.plugins && chart.options.plugins.legend) {
+                    chart.options.plugins.legend.labels = {
+                        ...chart.options.plugins.legend.labels,
+                        color: fontColor
+                    };
+                }
+                
+                chart.update();
+            });
+        }
+        
+        // Show Loading
+        function showLoading() {
+            loadingEl.classList.remove('hidden');
+            errorEl.classList.add('hidden');
+        }
+        
+        // Hide Loading
+        function hideLoading() {
+            loadingEl.classList.add('hidden');
+        }
+        
+        // Show Error
+        function showError() {
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+        }
+        
+        // Check for saved theme preference
+        window.addEventListener('load', function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                toggleTheme();
+            }
+        });
+    </script>
